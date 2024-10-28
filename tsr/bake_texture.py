@@ -25,7 +25,7 @@ def make_atlas(mesh, texture_resolution, texture_padding):
 def rasterize_position_atlas(
     mesh, atlas_vmapping, atlas_indices, atlas_uvs, texture_resolution, texture_padding
 ):
-    ctx = moderngl.create_context(standalone=True)
+    ctx = moderngl.create_context(standalone=True, backend='egl')
     basic_prog = ctx.program(
         vertex_shader="""
             #version 330
@@ -142,7 +142,7 @@ def positions_to_colors(model, scene_code, positions_texture, texture_resolution
             positions,
             scene_code,
         )
-    rgb_f = queried_grid["color"].numpy().reshape(-1, 3)
+    rgb_f = queried_grid["color"].to('cpu').numpy().reshape(-1, 3)
     rgba_f = np.insert(rgb_f, 3, positions_texture.reshape(-1, 4)[:, -1], axis=1)
     rgba_f[rgba_f[:, -1] == 0.0] = [0, 0, 0, 0]
     return rgba_f.reshape(texture_resolution, texture_resolution, 4)
