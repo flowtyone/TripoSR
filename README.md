@@ -1,4 +1,4 @@
-# TripoSR <a href="https://huggingface.co/stabilityai/TripoSR"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Model_Card-Huggingface-orange"></a> <a href="https://huggingface.co/spaces/stabilityai/TripoSR"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Gradio%20Demo-Huggingface-orange"></a> <a href="https://arxiv.org/abs/2403.02151"><img src="https://img.shields.io/badge/Arxiv-2403.02151-B31B1B.svg"></a>
+# TripoSR <a href="https://huggingface.co/stabilityai/TripoSR"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Model_Card-Huggingface-orange"></a> <a href="https://huggingface.co/spaces/stabilityai/TripoSR"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Gradio%20Demo-Huggingface-orange"></a> <a href="https://huggingface.co/papers/2403.02151"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Paper-Huggingface-orange"></a> <a href="https://arxiv.org/abs/2403.02151"><img src="https://img.shields.io/badge/Arxiv-2403.02151-B31B1B.svg"></a> <a href="https://discord.gg/mvS9mCfMnQ"><img src="https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white"></a>
 
 <div align="center">
   <img src="figures/teaser800.gif" alt="Teaser Video">
@@ -27,8 +27,9 @@ The model is released under the MIT license, which includes the source code, pre
 ## Getting Started
 ### Installation
 - Python >= 3.8
-- If you want to set up a virual environment, please make sure to use `virtualenv` instead of `venv`.
-- Install PyTorch according to your platform: [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+- Install CUDA if available
+- Install PyTorch according to your platform: [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/) **[Please make sure that the locally-installed CUDA major version matches the PyTorch-shipped CUDA major version. For example if you have CUDA 11.x installed, make sure to install PyTorch compiled with CUDA 11.x.]**
+- Update setuptools by `pip install --upgrade setuptools`
 - Install other dependencies by `pip install -r requirements.txt`
 
 ### Manual Inference
@@ -37,14 +38,11 @@ python run.py examples/chair.png --output-dir output/
 ```
 This will save the reconstructed 3D model to `output/`. You can also specify more than one image path separated by spaces. The default options takes about **6GB VRAM** for a single image input.
 
-For defailed usage of this script, use `python run.py --help`.
+If you would like to output a texture instead of vertex colors, use the `--bake-texture` option. You may also use `--texture-resolution` to specify the resolution in pixels of the output texture.
+
+For detailed usage of this script, use `python run.py --help`.
 
 ### Local Gradio App
-Install Gradio:
-```sh
-pip install gradio
-```
-Start the Gradio App:
 ```sh
 python gradio_app.py
 ```
@@ -52,11 +50,21 @@ python gradio_app.py
 ## Troubleshooting
 > AttributeError: module 'torchmcubes_module' has no attribute 'mcubes_cuda'
 
-This may be caused by using `venv` for the Python virtual environment. Please try to build the environment with `virtualenv` instead, or use the Dockerfile provided [here](https://huggingface.co/spaces/stabilityai/TripoSR/blob/main/Dockerfile).
+or
 
-Also related to different local and PyTorch CUDA versions, see [this issue](https://github.com/VAST-AI-Research/TripoSR/issues/3).
+> torchmcubes was not compiled with CUDA support, use CPU version instead.
 
-Update 2024.03.06: Will automatically fallback to CPU marching cubes when the error occurs.
+This is because `torchmcubes` is compiled without CUDA support. Please make sure that 
+
+- The locally-installed CUDA major version matches the PyTorch-shipped CUDA major version. For example if you have CUDA 11.x installed, make sure to install PyTorch compiled with CUDA 11.x.
+- `setuptools>=49.6.0`. If not, upgrade by `pip install --upgrade setuptools`.
+
+Then re-install `torchmcubes` by:
+
+```sh
+pip uninstall torchmcubes
+pip install git+https://github.com/tatsy/torchmcubes.git
+```
 
 ## Citation
 ```BibTeX
